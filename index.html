@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hong Kong Seminary Course Catalogue 香港神學院課程目錄</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary:   #2c4a7c;
+      --primary-light: #3d63a8;
+      --accent:    #c8a84b;
+      --bg:        #f5f6f8;
+      --surface:   #ffffff;
+      --border:    #dde1e9;
+      --text:      #1e2535;
+      --text-muted:#6b7280;
+      --tag-bg:    #eef2fb;
+      --tag-text:  #2c4a7c;
+      --radius:    8px;
+      --shadow:    0 2px 8px rgba(0,0,0,.08);
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue",
+                   "PingFang TC", "Noto Sans TC", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff;
+      padding: 28px 24px 24px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    }
+    header h1 { font-size: 1.55rem; font-weight: 700; letter-spacing: .01em; }
+    header h1 span { display: block; font-size: 1.1rem; font-weight: 400; opacity: .85; margin-top: 2px; }
+    header p.subtitle {
+      margin-top: 6px;
+      font-size: .88rem;
+      opacity: .78;
+      max-width: 680px;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      display: flex;
+      gap: 20px;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    /* ── Sidebar Filters ── */
+    aside.filters {
+      flex: 0 0 260px;
+      min-width: 220px;
+    }
+    aside.filters .filter-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    aside.filters .filter-card h3 {
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    /* Search */
+    .search-wrap { position: relative; }
+    .search-wrap input {
+      width: 100%;
+      padding: 8px 10px 8px 32px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: .9rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+    }
+    .search-wrap input:focus { border-color: var(--primary-light); }
+    .search-wrap svg {
+      position: absolute;
+      left: 9px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* Checkbox groups */
+    .checkbox-list { display: flex; flex-direction: column; gap: 5px; }
+    .checkbox-list label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: .88rem;
+      cursor: pointer;
+      padding: 2px 0;
+    }
+    .checkbox-list label input[type=checkbox] {
+      accent-color: var(--primary);
+      width: 15px; height: 15px;
+      flex-shrink: 0;
+    }
+    .checkbox-list label .count {
+      margin-left: auto;
+      font-size: .75rem;
+      color: var(--text-muted);
+      background: var(--tag-bg);
+      padding: 1px 6px;
+      border-radius: 20px;
+    }
+
+    /* Reset button */
+    .btn-reset {
+      display: block;
+      width: 100%;
+      margin-top: 4px;
+      padding: 8px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: .85rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .btn-reset:hover { background: var(--tag-bg); color: var(--primary); }
+
+    /* ── Main Content ── */
+    main { flex: 1; min-width: 0; }
+
+    .results-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .results-bar .count-label {
+      font-size: .9rem;
+      color: var(--text-muted);
+    }
+    .results-bar .count-label strong { color: var(--text); }
+    .results-bar select {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: .85rem;
+      color: var(--text);
+      background: var(--surface);
+      cursor: pointer;
+    }
+
+    /* ── Course Cards ── */
+    .course-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .course-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: box-shadow .2s, transform .15s;
+    }
+    .course-card:hover {
+      box-shadow: 0 6px 20px rgba(44,74,124,.13);
+      transform: translateY(-2px);
+    }
+
+    /* Card header */
+    .card-header { display: flex; align-items: flex-start; gap: 10px; }
+    .level-badge {
+      flex-shrink: 0;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-top: 3px;
+    }
+    .level-badge.seminar  { background: #fef3c7; color: #92400e; }
+    .level-badge.entry    { background: #d1fae5; color: #065f46; }
+    .level-badge.credit   { background: #dbeafe; color: #1e40af; }
+    .level-badge.degree   { background: #ede9fe; color: #5b21b6; }
+
+    .card-title { flex: 1; }
+    .card-title h2 {
+      font-size: .95rem;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--primary);
+    }
+    .card-title .zh { font-size: .82rem; color: var(--text-muted); margin-top: 1px; }
+
+    /* School */
+    .card-school {
+      font-size: .8rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .card-school svg { flex-shrink: 0; }
+
+    /* Description */
+    .card-desc {
+      font-size: .83rem;
+      color: #374151;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Tags */
+    .card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+    .tag {
+      font-size: .72rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      font-weight: 500;
+    }
+    .tag.bible { background: #fff7ed; color: #9a3412; }
+
+    /* Card footer */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+      font-size: .78rem;
+      color: var(--text-muted);
+    }
+    .card-footer a {
+      color: var(--primary-light);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: .8rem;
+    }
+    .card-footer a:hover { text-decoration: underline; }
+
+    /* Empty state */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state svg { margin-bottom: 12px; opacity: .4; }
+    .empty-state p { font-size: 1rem; }
+
+    /* ── Responsive ── */
+    @media (max-width: 780px) {
+      .layout { flex-direction: column; }
+      aside.filters { flex: none; width: 100%; }
+    }
+    @media (max-width: 500px) {
+      header h1 { font-size: 1.2rem; }
+      .course-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>
+    Hong Kong Seminary Course Catalogue
+    <span>香港神學院課程目錄</span>
+  </h1>
+  <p class="subtitle">Browse theology courses from leading Hong Kong seminaries. Filter by level, theme, Bible book, or school to find the right course for you.</p>
+</header>
+
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="filters" id="sidebar">
+
+    <!-- Search -->
+    <div class="filter-card">
+      <h3>Search 搜尋</h3>
+      <div class="search-wrap">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+             viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="search-input" placeholder="Keywords…" aria-label="Search courses">
+      </div>
+    </div>
+
+    <!-- Level -->
+    <div class="filter-card">
+      <h3>Level 課程程度</h3>
+      <div class="checkbox-list" id="filter-level">
+        <label><input type="checkbox" value="seminar">Seminar 研討會 <span class="count" data-level="seminar"></span></label>
+        <label><input type="checkbox" value="entry">Entry 入門課程 <span class="count" data-level="entry"></span></label>
+        <label><input type="checkbox" value="credit">Credit 學分課程 <span class="count" data-level="credit"></span></label>
+        <label><input type="checkbox" value="degree">Degree 學位課程 <span class="count" data-level="degree"></span></label>
+      </div>
+    </div>
+
+    <!-- Theme -->
+    <div class="filter-card">
+      <h3>Theme 主題</h3>
+      <div class="checkbox-list" id="filter-theme"></div>
+    </div>
+
+    <!-- Bible Book -->
+    <div class="filter-card">
+      <h3>Bible Book 聖經書卷</h3>
+      <div class="checkbox-list" id="filter-bible"></div>
+    </div>
+
+    <!-- School -->
+    <div class="filter-card">
+      <h3>School 神學院</h3>
+      <div class="checkbox-list" id="filter-school"></div>
+    </div>
+
+    <button class="btn-reset" id="btn-reset">✕ Clear all filters 清除篩選</button>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main>
+    <div class="results-bar">
+      <p class="count-label">Showing <strong id="result-count">…</strong> courses</p>
+      <select id="sort-select" aria-label="Sort courses">
+        <option value="school">Sort by School</option>
+        <option value="level">Sort by Level</option>
+        <option value="title">Sort by Title (A–Z)</option>
+        <option value="credits">Sort by Credits</option>
+      </select>
+    </div>
+    <div class="course-grid" id="course-grid"></div>
+  </main>
+
+</div>
+
+<script>
+(function () {
+  // ── Data loading ──────────────────────────────────────────────────
+  const DATA_URL = 'data/courses.json';
+
+  let allCourses = [];
+  let filtered   = [];
+
+  // Active filter state
+  const filters = {
+    search: '',
+    levels:  new Set(),
+    themes:  new Set(),
+    bibles:  new Set(),
+    schools: new Set(),
+  };
+
+  // ── Helpers ───────────────────────────────────────────────────────
+  const $ = id => document.getElementById(id);
+
+  const LEVEL_ORDER = { seminar: 0, entry: 1, credit: 2, degree: 3 };
+
+  const CANON_ORDER = [
+    'Genesis','Exodus','Leviticus','Numbers','Deuteronomy',
+    'Joshua','Judges','Ruth','1 Samuel','2 Samuel','1 Kings','2 Kings',
+    '1 Chronicles','2 Chronicles','Ezra','Nehemiah','Esther',
+    'Job','Psalms','Proverbs','Ecclesiastes','Song of Songs',
+    'Isaiah','Jeremiah','Lamentations','Ezekiel','Daniel',
+    'Hosea','Joel','Amos','Obadiah','Jonah','Micah','Nahum','Habakkuk',
+    'Zephaniah','Haggai','Zechariah','Malachi',
+    'Matthew','Mark','Luke','John','Acts',
+    'Romans','1 Corinthians','2 Corinthians','Galatians','Ephesians',
+    'Philippians','Colossians','1 Thessalonians','2 Thessalonians',
+    '1 Timothy','2 Timothy','Titus','Philemon',
+    'Hebrews','James','1 Peter','2 Peter','1 John','2 John','3 John',
+    'Jude','Revelation'
+  ];
+
+  const THEME_LABELS = {
+    'art':               'Art 藝術',
+    'biblical studies':  'Biblical Studies 聖經研究',
+    'church history':    'Church History 教會歷史',
+    'church ministry':   'Church Ministry 教會事工',
+    'counselling':       'Counselling 輔導',
+    'culture':           'Culture 文化',
+    'ethics':            'Ethics 倫理',
+    'family':            'Family 家庭',
+    'languages':         'Languages 語言',
+    'leadership':        'Leadership 領導',
+    'longevity':         'Longevity / Aging 長者/老齡',
+    'mental health':     'Mental Health 心理健康',
+    'mission':           'Mission 宣教',
+    'music':             'Music 音樂',
+    'pastoral ministry': 'Pastoral Ministry 牧養',
+    'psychology':        'Psychology 心理學',
+    'research':          'Research 研究',
+    'social service':    'Social Service 社會服務',
+    'spiritual formation':'Spiritual Formation 靈命培育',
+    'theology':          'Theology 神學',
+    'worship':           'Worship 崇拜',
+  };
+
+  function themeLabel(t) { return THEME_LABELS[t] || t; }
+
+  function levelLabel(l) {
+    return { seminar:'Seminar', entry:'Entry', credit:'Credit', degree:'Degree' }[l] || l;
+  }
+
+  // ── Build sidebar filter lists ─────────────────────────────────────
+  function countBy(key, value) {
+    return allCourses.filter(c =>
+      key === 'themes'      ? c.themes.includes(value) :
+      key === 'bible_books' ? c.bible_books.includes(value) :
+      key === 'school'      ? c.school === value :
+      key === 'level'       ? c.level === value : false
+    ).length;
+  }
+
+  function buildCheckboxGroup(containerId, items, key, labelFn) {
+    const container = $(containerId);
+    container.innerHTML = '';
+    items.forEach(item => {
+      const label = document.createElement('label');
+      const cb    = document.createElement('input');
+      cb.type  = 'checkbox';
+      cb.value = item;
+      const text = document.createTextNode(' ' + labelFn(item));
+      const span = document.createElement('span');
+      span.className = 'count';
+      span.textContent = countBy(key, item);
+      label.appendChild(cb);
+      label.appendChild(text);
+      label.appendChild(span);
+      container.appendChild(label);
+    });
+  }
+
+  function buildSidebar() {
+    // Themes — sorted by label
+    const themes = [...new Set(allCourses.flatMap(c => c.themes))].sort();
+    buildCheckboxGroup('filter-theme', themes, 'themes', themeLabel);
+
+    // Bible books — ordered canonically then alphabetically for unlisted
+    const allBooks = [...new Set(allCourses.flatMap(c => c.bible_books))];
+    const sortedBooks = allBooks.sort((a, b) => {
+      const ia = CANON_ORDER.indexOf(a), ib = CANON_ORDER.indexOf(b);
+      if (ia === -1 && ib === -1) return a.localeCompare(b);
+      if (ia === -1) return 1;
+      if (ib === -1) return -1;
+      return ia - ib;
+    });
+    buildCheckboxGroup('filter-bible', sortedBooks, 'bible_books', b => b);
+
+    // Schools — sorted
+    const schools = [...new Set(allCourses.map(c => c.school))].sort();
+    buildCheckboxGroup('filter-school', schools, 'school', s => s);
+
+    // Level counts
+    ['seminar','entry','credit','degree'].forEach(l => {
+      const el = document.querySelector(`[data-level="${l}"]`);
+      if (el) el.textContent = countBy('level', l);
+    });
+
+    // Re-attach checkbox listeners
+    document.querySelectorAll('#sidebar input[type=checkbox]').forEach(cb => {
+      cb.addEventListener('change', onCheckboxChange);
+    });
+  }
+
+  // ── Filter + render ───────────────────────────────────────────────
+  function applyFilters() {
+    const q = filters.search.toLowerCase().trim();
+    filtered = allCourses.filter(c => {
+      if (filters.levels.size  && !filters.levels.has(c.level))                 return false;
+      if (filters.themes.size  && ![...filters.themes].some(t => c.themes.includes(t))) return false;
+      if (filters.bibles.size  && ![...filters.bibles].some(b => c.bible_books.includes(b))) return false;
+      if (filters.schools.size && !filters.schools.has(c.school))               return false;
+      if (q) {
+        const haystack = [c.title_en, c.title_zh, c.school, c.school_zh,
+                          c.description, ...c.themes, ...c.bible_books].join(' ').toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    });
+    sortCourses();
+    renderCards();
+  }
+
+  function sortCourses() {
+    const key = $('sort-select').value;
+    filtered.sort((a, b) => {
+      if (key === 'level')   return (LEVEL_ORDER[a.level] ?? 99) - (LEVEL_ORDER[b.level] ?? 99);
+      if (key === 'credits') return b.credits - a.credits;
+      if (key === 'title')   return a.title_en.localeCompare(b.title_en);
+      return a.school.localeCompare(b.school); // default: school
+    });
+  }
+
+  function renderCards() {
+    const grid = $('course-grid');
+    $('result-count').textContent = filtered.length;
+    if (filtered.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <p>No courses match your filters.<br>嘗試清除部分篩選條件。</p>
+        </div>`;
+      return;
+    }
+    grid.innerHTML = filtered.map(courseCard).join('');
+  }
+
+  function courseCard(c) {
+    const themeTagsHtml = c.themes.slice(0, 4).map(t =>
+      `<span class="tag">${themeLabel(t)}</span>`).join('');
+    const bibleTagsHtml = c.bible_books.slice(0, 4).map(b =>
+      `<span class="tag bible">${b}</span>`).join('');
+    const moreBible = c.bible_books.length > 4 ?
+      `<span class="tag bible">+${c.bible_books.length - 4} more</span>` : '';
+    const credits = c.credits === 0 ? 'Non-credit' : `${c.credits} credit${c.credits !== 1 ? 's' : ''}`;
+
+    return `
+    <article class="course-card">
+      <div class="card-header">
+        <span class="level-badge ${c.level}">${levelLabel(c.level)}</span>
+        <div class="card-title">
+          <h2>${c.title_en}</h2>
+          <div class="zh">${c.title_zh}</div>
+        </div>
+      </div>
+      <div class="card-school">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        ${c.school} &nbsp;·&nbsp; ${c.school_zh}
+      </div>
+      <p class="card-desc">${c.description}</p>
+      <div class="card-tags">${themeTagsHtml}</div>
+      ${bibleTagsHtml ? `<div class="card-tags">${bibleTagsHtml}${moreBible}</div>` : ''}
+      <div class="card-footer">
+        <span>${credits} &nbsp;·&nbsp; ${c.semester}</span>
+        <a href="${c.url}" target="_blank" rel="noopener">View course →</a>
+      </div>
+    </article>`;
+  }
+
+  // ── Event listeners ───────────────────────────────────────────────
+  function onCheckboxChange(e) {
+    const cb  = e.target;
+    const val = cb.value;
+    const group = cb.closest('[id]').id; // filter-level / filter-theme / filter-bible / filter-school
+
+    if (group === 'filter-level')  filters.levels[cb.checked  ? 'add' : 'delete'](val);
+    if (group === 'filter-theme')  filters.themes[cb.checked  ? 'add' : 'delete'](val);
+    if (group === 'filter-bible')  filters.bibles[cb.checked  ? 'add' : 'delete'](val);
+    if (group === 'filter-school') filters.schools[cb.checked ? 'add' : 'delete'](val);
+    applyFilters();
+  }
+
+  $('search-input').addEventListener('input', e => {
+    filters.search = e.target.value;
+    applyFilters();
+  });
+
+  $('sort-select').addEventListener('change', () => {
+    sortCourses();
+    renderCards();
+  });
+
+  $('btn-reset').addEventListener('click', () => {
+    filters.search = '';
+    filters.levels.clear();
+    filters.themes.clear();
+    filters.bibles.clear();
+    filters.schools.clear();
+    $('search-input').value = '';
+    document.querySelectorAll('#sidebar input[type=checkbox]').forEach(cb => cb.checked = false);
+    applyFilters();
+  });
+
+  // ── Bootstrap ─────────────────────────────────────────────────────
+  fetch(DATA_URL)
+    .then(r => {
+      if (!r.ok) throw new Error('Failed to load course data');
+      return r.json();
+    })
+    .then(data => {
+      allCourses = data;
+      buildSidebar();
+      applyFilters();
+    })
+    .catch(err => {
+      $('course-grid').innerHTML =
+        `<div class="empty-state"><p>⚠ Could not load course data.<br>${err.message}</p></div>`;
+    });
+})();
+</script>
+
+</body>
+</html>
